@@ -1,11 +1,10 @@
 #include <iostream>
 #include <string>
-#include <opencv2/opencv.hpp>
 #include <boost/program_options.hpp>
 
 #include "types.h"
+#include "video_merger.h"
 
-using cv::VideoCapture, cv::Mat;
 using std::cout, std::cerr, std::string, std::vector;
 
 vector<string> picture_paths;
@@ -44,8 +43,8 @@ void Init(int argc, char **argv) {
     }
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     Init(argc, argv);
+    VideoMerger::shared.Synthesize(picture_paths, video_path, "fuckyou.avi");
     return 0;
 }

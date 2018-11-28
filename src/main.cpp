@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <iomanip>
 #include <boost/program_options.hpp>
 
 #include "types.h"
@@ -45,6 +46,11 @@ void Init(int argc, char **argv) {
 
 int main(int argc, char **argv) {
     Init(argc, argv);
-    VideoMerger::shared.Synthesize(picture_paths, video_path, "fuckyou.avi");
+    VideoMerger::shared.Synthesize(
+        picture_paths, video_path, "fuckyou.avi", [] (double progress) {
+        cout << "\rGenerating progress: " 
+            << std::fixed << std::setprecision(2) << (progress * 100) << "%";
+    });
+    cout << "\n";
     return 0;
 }

@@ -5,7 +5,7 @@
 
 #include <opencv2/opencv.hpp>
 
-using cv::VideoWriter, cv::VideoCapture, cv::Mat, cv::Size;
+using cv::VideoWriter, cv::VideoCapture, cv::Mat, cv::Size, cv::Point, cv::Scalar;
 using std::string, std::vector, std::function;
 
 VideoMerger VideoMerger::shared;
@@ -14,6 +14,7 @@ void VideoMerger::Synthesize(
     vector<string> picture_paths,
     string video_path,
     string output_video_path,
+    std::string watermark_text,
     function<void(double)> progress) const {
     
     VideoCapture capturer;
@@ -35,6 +36,7 @@ void VideoMerger::Synthesize(
         if (!pictures[i].data)
             throw BadFileAccess("Picture at \"" + path + "\" is badly formatted");
         cv::resize(pictures[i], pictures[i], output_size);
+        AddWatermark(pictures[i], watermark_text);
         progress(static_cast<double>(i + 1) / (frame_count + pictures.size()));
     }
 
@@ -52,7 +54,26 @@ void VideoMerger::Synthesize(
     for (u32 i = 0; i < frame_count; i++) {
         Mat mat;
         capturer >> mat;
+        AddWatermark(mat, watermark_text);
         writer << mat;
         progress(static_cast<double>(pictures.size() + i + 1) / (frame_count + pictures.size()));
     }
+}
+
+void VideoMerger::AddWatermark(cv::Mat &mat, std::string text) {
+    Scalar white = Scalar::all(255);
+    Scalar black = Scalar::all(0);
+
+    int font_face = cv::FONT_HERSHEY_SCRIPT_SIMPLEX, thickness = 1, base_line;
+    double font_scale = 1.2;
+
+    Size text_size = cv::getTextSize(text, font_face, font_scale, thickness, &base_line);
+    base_line += thickness;
+    cv::Point origin(0, mat.rows - base_line);
+    
+    rectangle(mat, origin + Point(0, base_line),
+        origin + Point(text_size.width, -text_size.height),
+        black, cv::FILLED);
+
+    cv::putText(mat, text, origin, font_face, font_scale, white, thickness);
 }

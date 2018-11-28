@@ -4,3 +4,6 @@ CMakeFiles
 Makefile
 bin
 .vscode
+*.jpg
+*.avi
+*.mp4

@@ -48,8 +48,13 @@ void VideoMerger::Synthesize(
         fps, output_size);
 
     for (u32 i = 0; i < pictures.size(); i++) {
-        for (u32 j = 0; j < (1000 / fps); j++)
-            writer << pictures[i];    
+        // fade in
+        Mat original_frame(output_size, pictures[0].type(), Scalar::all(0));
+        if (i > 0) original_frame = pictures[i - 1];
+        for (u32 j = 0; j < fps; j++) 
+            writer << CoverLeft(original_frame, pictures[i], static_cast<double>(j) / fps);
+        for (u32 j = 0; j < fps; j++)
+            writer << pictures[i];
     }
     for (u32 i = 0; i < frame_count; i++) {
         Mat mat;
@@ -76,4 +81,14 @@ void VideoMerger::AddWatermark(cv::Mat &mat, std::string text) {
         black, cv::FILLED);
 
     cv::putText(mat, text, origin, font_face, font_scale, white, thickness);
+}
+
+cv::Mat VideoMerger::CoverLeft(const cv::Mat &a, const cv::Mat &b, double progress) {
+    int width = a.cols, height = a.rows;
+    int cropped_width = width * progress;
+    cv::Rect roi(0, 0, cropped_width, height);
+    cv::Mat cropped_image = b(roi);
+    Mat ans = a.clone();
+    cropped_image.copyTo(ans.colRange(width - cropped_width, width));
+    return ans;
 }

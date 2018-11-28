@@ -19,4 +19,5 @@ public:
 
 private:
     static void AddWatermark(cv::Mat &mat, std::string text);
+    static cv::Mat CoverLeft(const cv::Mat &a, const cv::Mat &b, double progress);
 };

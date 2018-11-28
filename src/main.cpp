@@ -1,14 +1,51 @@
 #include <iostream>
-#include <opencv2/videoio.hpp>
+#include <string>
+#include <opencv2/opencv.hpp>
+#include <boost/program_options.hpp>
 
 #include "types.h"
 
-using std::cout;
-using cv::VideoCapture;
+using cv::VideoCapture, cv::Mat;
+using std::cout, std::cerr, std::string, std::vector;
 
-int main(int argc, char **argv) {
-    for (u32 i = 0; i < argc; i++)
-        cout << argv[i] << "\n";
-    VideoCapture capturer();
+vector<string> picture_paths;
+string video_path;
+
+void Init(int argc, char **argv) {
+    using namespace boost::program_options;
+    options_description desc;
+    desc.add_options()
+        ("help", "help screen")
+        ("video_path", value<string>(), "the path of input video")
+        ("picture_paths", value<vector<string>>()->multitoken(), "the paths of pictures");
+
+    variables_map vm;
+    try {
+        store(parse_command_line(argc, argv, desc), vm);
+        notify(vm);
+        if (vm.count("help")) {
+            cout << desc;
+            exit(1);
+        }
+        if (!vm.count("video_path") || !vm.count("picture_paths")) {
+            cout << "Not sufficient arguments!\n" << desc;
+            exit(1);
+        }
+    
+        video_path = vm["video_path"].as<string>();
+        picture_paths = vm["picture_paths"].as<vector<string>>();
+        cout << "video_path = \"" << video_path << "\"\n";
+        for (u32 i = 0; i < picture_paths.size(); i++) {
+            cout << "picture_paths[" << i << "] = \"" << picture_paths[i] << "\"\n";
+        }
+    } catch (...) {
+        cout << "Incorrect argument format!\n" << desc;
+        exit(1);
+    }
+}
+
+int main(int argc, char **argv)
+{
+    Init(argc, argv);
     return 0;
 }
